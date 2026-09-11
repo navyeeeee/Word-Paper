@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="CKG1RMfodF6hymkTtatD1t">
+<head data-page-node-id="kaB0UGXMMyU76noTdvCgze">
+  <meta charset="UTF-8" data-page-node-id="IfeB5cBBHBlBftA2XgDHlq">
+  <!-- 移动端适配；输入框字体 ≥16px，避免 iOS 聚焦时自动放大 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="sIjS2nCwrZdRbOdLNGgGak">
+  <meta name="version" content="v1.4.2" data-page-node-id="verTag">
+  <title>白纸单词</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" data-page-node-id="xFhFvGmY4qDpM1UJV1e7Bd">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin data-page-node-id="kLnrAfGFRU8ptZXmyt0Bl1">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet" data-page-node-id="0ubmXl24TrQ5uFhInBnl1k">
+  <link rel="stylesheet" href="style.css" data-page-node-id="HXr3xHD7Z2aTkE6OpkT2yW">
+</head>
+<body data-page-node-id="fRLPII4kQYz8iRNzOPZl7c">
+  <!-- ===== 首页 ===== -->
+  <section id="home" class="home" aria-label="首页" data-page-node-id="BtZFRf2GPoFbwmhpF9M5sx">
+    <div class="home-inner" data-page-node-id="eKcjTVyNU1wssmNFnYbk0E">
+      <div class="home-title-row" data-page-node-id="sy73mG1rgTBs0lzFlMPBxn">
+        <h1 class="home-title" data-page-node-id="KeUkQZqbwZV4wBZwpnW0Mi">白纸单词</h1>
+        <span class="home-seal" aria-hidden="true" data-page-node-id="TuZxqsHsCJSKBHR8XENrue">词</span>
+      </div>
+      <span class="home-underline" aria-hidden="true" data-page-node-id="rl4UF7ZmBo2G6YijXRvYub"></span>
+      <p class="home-tagline" data-page-node-id="ZGO6sXEYJDDafdQHPwz6jH">在一张白纸上，写下单词，再于留白处回忆</p>
+      <div class="home-actions" data-page-node-id="hH5EBPWms79050EqmGMGUJ">
+        <button id="home-entry" class="home-btn primary" data-page-node-id="3YuLfCmwBN34enbolJKKQ1">开始录入</button>
+        <button id="home-recall" class="home-btn" data-page-node-id="hxGhaYMpZi597RMTXE7qE1">开始记忆</button>
+      </div>
+      <div class="shelf" aria-label="我的白纸" data-page-node-id="Ty5677MtrTLpSgJmDGgDov">
+        <div class="shelf-head" data-page-node-id="Tl0D52Gau1hFqlrgsD7elM">
+          <h2 class="shelf-title" data-page-node-id="eQLFd69fJdRwK0hHjtDSKE">我的白纸</h2>
+          <div class="shelf-head-actions" data-page-node-id="shelfHeadActions">
+            <button id="shelf-books" class="shelf-new shelf-books" aria-label="打开单词本，从词库导入成白纸" data-page-node-id="shelfBooksBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="shelfBooksIcon"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" data-page-node-id="shelfBooksP1"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" data-page-node-id="shelfBooksP2"/></svg>
+              <span data-page-node-id="shelfBooksLabel">单词本</span>
+            </button>
+            <button id="shelf-new" class="shelf-new" aria-label="新建白纸" data-page-node-id="mAf81UHdNTtFEzrBoCoelG">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="dCWIed6WQF51KvBMYIzYbP"><path d="M12 5v14M5 12h14" data-page-node-id="ohfD6JX6mieUaKP7tBlKzV"/></svg>
+              <span data-page-node-id="UhJ0vpxPgAFcAjcuBwKzRE">新建</span>
+            </button>
+          </div>
+        </div>
+        <div class="shelf-list" id="shelf-list" data-page-node-id="v6UEQTGuYYbXPuXCkHTsQ3"></div>
+      </div>
+      <p class="home-count" id="home-count" data-page-node-id="BukyvmUsrF3sJHDsQtVEOo">还没有单词，从录入开始吧</p>
+    </div>
+    <!-- 装饰性浮字：如墨迹般淡淡漂浮 -->
+    <div class="home-deco" aria-hidden="true" data-page-node-id="lx46GVEpbrAVMILw6BTQQ3">
+      <span class="deco-word" style="top:16%;left:10%" data-page-node-id="8W1Jm5EVyLLJFUCNzIeiJk">serendipity</span>
+      <span class="deco-word" style="top:24%;left:76%" data-page-node-id="x8bnAqNFJoYTrotuSvvSbu">纸上留白</span>
+      <span class="deco-word" style="top:58%;left:8%" data-page-node-id="LowgSKbGlOrEPiJadHZqGB">回忆</span>
+      <span class="deco-word" style="top:72%;left:80%" data-page-node-id="BkA2zuQsZ2ybTUtbbLzd3V">ephemeral</span>
+      <span class="deco-word" style="top:86%;left:22%" data-page-node-id="XxT7u4D0s17OX58Ddj61Gm">单词</span>
+      <span class="deco-word" style="top:80%;left:52%" data-page-node-id="FA5jXUg2RJEhP6CbzHG60d">ink</span>
+    </div>
+  </section>
+
+  <!-- ===== 应用主体 ===== -->
+  <div id="app" class="app" data-page-node-id="XO2NsKRu20OP9BnCXhmWX4">
+    <!-- 顶部工具栏：容器 pointer-events:none，仅子元素接收点击，空隙穿透到纸张 -->
+    <header class="toolbar" data-page-node-id="P8BbkDS0VXON69QBnQGgtf">
+      <div class="toolbar-left" data-page-node-id="Whh2XfATFTXmbn2mtxbfbj">
+        <button class="brand" id="btn-home" aria-label="返回首页" data-page-node-id="p3S5D54gSzY5ogAcS26qB4">白纸单词</button>
+        <button id="btn-paper-name" class="paper-name" aria-label="保存白纸：命名当前白纸" data-page-node-id="e8iaKEv8RE49mtFaOE621C">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="9vZs9B5wHGHg4JH8SlTQYf"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" data-page-node-id="4p07EL7qly3EoeSAZCDSZQ"/></svg>
+          <span id="paper-name-text" data-page-node-id="Ktm4e5oGxD1YjDhVBFvYos">未命名白纸</span>
+        </button>
+      </div>
+      <div class="controls" data-page-node-id="APVQOiKGrHh7mqHbndPHV1">
+        <div class="mode-switch" role="group" aria-label="模式切换" data-page-node-id="F2lNuJ9oiKifKdIE5DbK6n">
+          <button id="mode-entry" class="mode-btn active" aria-pressed="true" data-page-node-id="AEGZkyCKE6Iedy9z5HMPB2">录入</button>
+          <button id="mode-recall" class="mode-btn" aria-pressed="false" data-page-node-id="SnT1Fe5BxRY0GnIk9D3Awe">记忆</button>
+          <button id="mode-game" class="mode-btn" aria-pressed="false" data-page-node-id="2yhfU6YmrKxBapHer6wcRD">游戏</button>
+        </div>
+        <span class="count" id="word-count" aria-live="polite" data-page-node-id="G74tvHlQbv4X9C6zYL7c6J">0 个单词</span>
+        <button id="btn-stats" class="icon-btn" aria-label="查看记忆统计" data-page-node-id="WoYrEQrzT0p0CvIi6DUAgJ">统计</button>
+        <button id="btn-export" class="icon-btn" aria-label="导出单词数据" data-page-node-id="l89GTlCznBXie7lrcqlk6Q">导出</button>
+        <button id="btn-import" class="icon-btn" aria-label="导入单词数据" data-page-node-id="GIvcvzQJ3Txy75fqvMFy76">导入</button>
+        <button id="btn-clear" class="icon-btn danger" aria-label="清除所有单词" data-page-node-id="G5eRJf0MjWCqIbu2PFmiCI">清除</button>
+        <button id="btn-theme" class="icon-btn" aria-label="切换到夜间模式" data-page-node-id="6KJWS3twjB77eMU5IbGyri">
+          <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="6FBOyw3aZo2e1pZTZRQd9p"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" data-page-node-id="58BKMUoFQ8X3U3MArkPMto"/></svg>
+          <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="1bQhz7u8e6KfKgxIgDLcYm"><circle cx="12" cy="12" r="4" data-page-node-id="lQeM6yFtMDM6FndZE7DrE4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" data-page-node-id="fRaPfmx3NynG4oNIXgPg3F"/></svg>
+        </button>
+        <button id="btn-sound" class="icon-btn" aria-label="关闭音效" data-page-node-id="q6LGy4pDazQOEs5osIFdEL">
+          <svg class="icon icon-sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="zPlCP6jTOr8mwDoHIAqyFy"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" data-page-node-id="bQ6e03DHo0JU1O3a5Aomr5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" data-page-node-id="X6Dthz6e3Al7AoadfjZ2If"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14" data-page-node-id="PGFkxXCNfM7WxzI64oEN3G"/></svg>
+          <svg class="icon icon-sound-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="vaEFgUHCEGvmQs8heNvcrI"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" data-page-node-id="RcE2gL5tWnw2NyeXBQHmiL"/><line x1="23" y1="9" x2="17" y2="15" data-page-node-id="e6OqwZs7hoPBnb2BuXpH32"/><line x1="17" y1="9" x2="23" y2="15" data-page-node-id="FYPdfBBxOrcxTp4ER2WeyO"/></svg>
+          <span class="icon-label" data-page-node-id="lblSoundTxt">音效</span>
+        </button>
+        <!-- 自动朗读开关：开 = 单词浮现 / 被切开时自动读音；关 = 静默（可点单词重听） -->
+        <button id="btn-speak" class="icon-btn" aria-label="关闭自动朗读" data-page-node-id="btnSpeakToggle">
+          <svg class="icon icon-speak-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="spkOn1">
+            <path d="M4 9v6h3.2L12 19V5L7.2 9H4z" data-page-node-id="spkOn2"/>
+            <path d="M15.4 8.6a4.8 4.8 0 0 1 0 6.8" data-page-node-id="spkOn3"/>
+            <path d="M18.2 5.8a8.8 8.8 0 0 1 0 12.4" data-page-node-id="spkOn4"/>
+          </svg>
+          <svg class="icon icon-speak-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="spkOff1">
+            <path d="M4 9v6h3.2L12 19V5L7.2 9H4z" data-page-node-id="spkOff2"/>
+            <line x1="16" y1="9.5" x2="21" y2="14.5" data-page-node-id="spkOff3"/>
+            <line x1="21" y1="9.5" x2="16" y2="14.5" data-page-node-id="spkOff4"/>
+          </svg>
+          <span class="icon-label" data-page-node-id="lblSpeakTxt">朗读</span>
+        </button>
+        <input type="file" id="import-file" accept="application/json,.json" hidden data-page-node-id="CWkz4NQhTnl3zwqV7dLQjS">
+      </div>
+    </header>
+
+    <!-- 游戏 HUD：顶部时间条 + 倒计时 + 得分 -->
+    <div class="game-timebar" id="game-timebar" aria-hidden="true" data-page-node-id="eNVHInzuLSMfeDKjN9Fv38">
+      <div class="game-timebar-fill" id="game-timebar-fill" data-page-node-id="HWM3M1IeibdAKV0lCDBgEp"></div>
+    </div>
+    <div class="game-hud" id="game-hud" aria-hidden="true" data-page-node-id="1oizzoly3epRm0BvIbKB41">
+      <div class="game-timer" data-page-node-id="cDYmaRqEjY9HLBCQyk9oJw">
+        <span class="game-timer-value" id="game-timer" data-page-node-id="fLuwYz8cDlT4ZklDeTDfOO">60</span>
+        <span class="game-timer-unit" data-page-node-id="rFpBGS4zQcFgpWzlvE4582">秒</span>
+      </div>
+      <span class="game-hud-divider" aria-hidden="true" data-page-node-id="DOmR0eFgSooFI0VWMCxxyf"></span>
+      <div class="game-score" data-page-node-id="dj6Ktqlkiiol26IlCa8035">
+        <span class="game-score-value" id="game-score" data-page-node-id="FwlqzKxSdrwE2xTyuDqbmp">0</span>
+        <span class="game-score-label" data-page-node-id="cbCJrkDD8BPsiFYxx9H4Co">已切</span>
+      </div>
+      <span class="game-hud-divider" aria-hidden="true" data-page-node-id="hqkkUPpBe0gRe0Vifa8GNI"></span>
+      <div class="game-level" role="group" aria-label="难度挡位" data-page-node-id="c7HSmCWyheb7UoZSau6teL">
+        <button class="game-level-btn" data-level="0" aria-pressed="false" data-page-node-id="rLeKGB1S0H8YPcdI96Ho00">慢</button>
+        <button class="game-level-btn active" data-level="1" aria-pressed="true" data-page-node-id="yDj4bZDsewhFd9RR0EGToJ">标准</button>
+        <button class="game-level-btn" data-level="2" aria-pressed="false" data-page-node-id="pJ3TtgOwkEd99Pam9MOHGF">快</button>
+      </div>
+    </div>
+    <!-- 游戏开场倒计时 -->
+    <div class="game-countdown" id="game-countdown" aria-hidden="true" data-page-node-id="xJgzCmkwehTq9XrzO4884L">
+      <span class="game-countdown-value" id="game-countdown-value" data-page-node-id="jqbzkGtmJ1IIy9y6OSlDoi">3</span>
+    </div>
+    <!-- 连击显示：环形倒计时 + 段位 + 火花 -->
+    <div class="game-combo" id="game-combo" aria-hidden="true" data-page-node-id="dB5HZBuoyt3N3VVRNGqAnH">
+      <div class="combo-core">
+        <svg class="combo-ring" viewBox="0 0 140 140" aria-hidden="true">
+          <circle class="combo-ring-track" cx="70" cy="70" r="62"></circle>
+          <circle class="combo-ring-fill" id="combo-ring-fill" cx="70" cy="70" r="62"></circle>
+        </svg>
+        <span class="combo-rays" aria-hidden="true"></span>
+        <span class="combo-shock" aria-hidden="true"></span>
+        <span class="combo-sparks" id="combo-sparks" aria-hidden="true"></span>
+        <div class="combo-num">
+          <span class="combo-x" aria-hidden="true">×</span><span class="game-combo-count" id="game-combo-count" data-page-node-id="4xPV5jhSFtAAZ7ksqPNWje">2</span>
+        </div>
+      </div>
+      <span class="game-combo-label" data-page-node-id="9onwGMsW9z8GEZgpR5z2Vj">连击</span>
+      <span class="combo-tier" id="combo-tier">顺手</span>
+    </div>
+
+    <!-- 纸张区域：接收所有点击 -->
+    <main id="paper" aria-label="纸张区域" data-page-node-id="vEzmUBGg8GKD37qK4OxFVn"></main>
+
+    <!-- 底部操作提示 -->
+    <div class="hint" id="hint" data-page-node-id="03ZkHXw48nwpXeLK53EXUo">点击纸张任意位置录入单词</div>
+  </div>
+
+  <!-- 记忆统计面板 -->
+  <div id="stats-panel" class="panel" aria-hidden="true" data-page-node-id="gpum4Sqg9ZmQuSmXs4IQVV">
+    <div class="panel-card" data-page-node-id="QUR9w3T8bcd4HJMrUdZ3F1">
+      <div class="panel-head" data-page-node-id="Dv4JIXWNgRv2Og1VMFFyzd">
+        <h2 data-page-node-id="XJdVgr4HjXoxvYXlvWpFDl">记忆统计</h2>
+        <button id="stats-close" class="panel-close" aria-label="关闭统计" data-page-node-id="22E1yRmF6416Qvvia7HJdP">×</button>
+      </div>
+      <div class="panel-body" id="stats-list" data-page-node-id="BpvL0m52V7xXMcjo7xlcMK"></div>
+    </div>
+  </div>
+
+  <!-- 保存白纸（命名）对话框 -->
+  <div id="paper-dialog" class="panel" aria-hidden="true" data-page-node-id="dLpuoGoFQPd0BWGxSlzqbT">
+    <div class="panel-card paper-dialog-card" data-page-node-id="GtMJVNrYCRvq64uyVXO6jW">
+      <div class="panel-head" data-page-node-id="jCqecDCxt8BxAjfweX3shd">
+        <h2 data-page-node-id="5BvgN2hD86d0ACbA80VyEN">保存白纸</h2>
+        <button id="paper-dialog-close" class="panel-close" aria-label="关闭" data-page-node-id="thn2EdYIgSPFYs94x1hIWJ">×</button>
+      </div>
+      <div class="paper-dialog-body" data-page-node-id="qZ6HWDsMDjAOiBoSPMTcaa">
+        <p class="paper-dialog-hint" data-page-node-id="sjnG7GC1qWyWDjVyaHeEr3">给这张白纸取个名字，方便区分管理</p>
+        <input id="paper-dialog-name" class="paper-dialog-input" type="text" placeholder="白纸名称" autocomplete="off" aria-label="白纸名称" maxlength="30" data-page-node-id="q39jHlaPzC9pVrM6aF6xw0">
+        <div class="paper-dialog-actions" data-page-node-id="0iLXfZBZPqfQb8bl0hnEbr">
+          <button id="paper-dialog-cancel" class="paper-dialog-cancel" data-page-node-id="FXBrrL51N5fHzbLtR61Xmb">取消</button>
+          <button id="paper-dialog-save" class="paper-dialog-save" data-page-node-id="TeqF1fv4FX7TLlMRnN3Qgm">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 游戏结算面板 -->
+  <div id="game-over-panel" class="panel" aria-hidden="true" data-page-node-id="btz5taIt4qbJdUyck2UxHm">
+    <div class="panel-card game-over-card" data-page-node-id="tzLw9BaJubhr9d70x7j1Nb">
+      <div class="panel-head" data-page-node-id="j5cReY1ZQvRVVcJ59gfnGh">
+        <h2 data-page-node-id="NvvAQhU53Hdd1oIVMADVAt">时间到</h2>
+        <button id="game-over-close" class="panel-close" aria-label="退出游戏" data-page-node-id="p88EgCqReg8ZLH1YKVBm6O">×</button>
+      </div>
+      <div class="panel-body game-over-body" id="game-over-body" data-page-node-id="wZcn9cZOy41zSVKHPIkqsE"></div>
+      <div class="game-over-actions" data-page-node-id="VmEy3XBdXVm4RdwSq99Kf7">
+        <button id="game-again" class="game-over-primary" data-page-node-id="LBP8BWkwfmwxDvDhN80JQJ">再来一次</button>
+        <button id="game-exit" class="game-over-ghost" data-page-node-id="22Ojg4GmXzBFj7HKMZvtT9">退出游戏</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 单词本面板：内置词库 → 一键导入为白纸 -->
+  <div id="wordbook-panel" class="panel" aria-hidden="true" data-page-node-id="wordbookPanel">
+    <div class="panel-card wordbook-panel-card" data-page-node-id="wordbookPanelCard">
+      <div class="panel-head" data-page-node-id="wordbookPanelHead">
+        <h2 data-page-node-id="wordbookPanelTitle">单词本</h2>
+        <button id="wordbook-close" class="panel-close" aria-label="关闭单词本" data-page-node-id="wordbookPanelClose">×</button>
+      </div>
+      <p class="wordbook-hint" data-page-node-id="wordbookHint">选一本词库，一键导入成一张白纸 —— 与手写白纸功能完全一致</p>
+      <div class="panel-body wordbook-list" id="wordbook-list" data-page-node-id="wordbookList"></div>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast" role="status" aria-live="polite" data-page-node-id="EaFuabZZFGXvUhSlSW3bdX"></div>
+
+  <!-- 录入卡片模板 -->
+  <template id="tpl-entry-card" data-page-node-id="ZwCoDi3XxZq2oBKVZW6DYd">
+    <div class="entry-card" data-page-node-id="ANvw6HGrwK0a1QEEBRAeUc">
+      <input class="entry-word" type="text" placeholder="单词" autocomplete="off" aria-label="单词" data-page-node-id="9Eqww3KIIAVR6tcXC0n5q5">
+      <input class="entry-def" type="text" placeholder="释义" autocomplete="off" aria-label="释义" data-page-node-id="9dBp9iSSKAU6fki5PgbOhS">
+      <div class="entry-actions" data-page-node-id="Vn8eM8nt8IwBD9F3GkUR65">
+        <button type="button" class="cancel-btn" data-page-node-id="ye8WXkdpv7MavU4dsx9hyv">取消</button>
+        <button type="button" class="save-btn" data-page-node-id="Zvs7nfBaxDYgbNrh0XC35M">保存</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- 单词元素模板 -->
+  <template id="tpl-word-card" data-page-node-id="c2DZBuuRPc6gYOQIlyw0Ga">
+    <div class="word-card" role="button" tabindex="0" aria-expanded="false" data-page-node-id="EYWQ3ty6yjmFypwGEV6vLC">
+      <span class="word-text" data-page-node-id="PsYdSiKBNjOf5YhQx1Uqej"></span>
+      <span class="definition" data-page-node-id="Ra8GG7XzEB4hotZyERkBBs"></span>
+      <button type="button" class="word-speak" aria-label="朗读这个单词" data-page-node-id="btnWordSpeak">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="wsSpk1">
+          <path d="M4 9v6h3.2L12 19V5L7.2 9H4z" data-page-node-id="wsSpk2"/>
+          <path d="M15.4 8.6a4.8 4.8 0 0 1 0 6.8" data-page-node-id="wsSpk3"/>
+          <path d="M18.2 5.8a8.8 8.8 0 0 1 0 12.4" data-page-node-id="wsSpk4"/>
+        </svg>
+      </button>
+    </div>
+  </template>
+
+  <script src="wordbooks.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

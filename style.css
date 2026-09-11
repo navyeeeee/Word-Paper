@@ -1,0 +1,1575 @@
+/* ==========================================================================
+   白纸单词 · 样式
+   设计方向（来自 ui-ux-pro-max）：
+   · 风格：Minimalism & Swiss —— 留白、清晰层级、克制动效
+   · 颜色：Notes & Writing App —— 暖墨 + 琥珀点缀在奶油纸底
+   · 字体：Editorial Classic —— Cormorant Garamond（书卷气衬线）+ 系统无衬线
+   颜色通过 CSS 变量统一管理，支持夜间模式
+   结构：首页(#home) → 应用(#app)，二者同享纸张背景，交叉淡入淡出切换
+   ========================================================================== */
+
+/* ---------- 主题变量 ---------- */
+:root {
+  --paper: #fdf6e3;                 /* 纸张底色（奶油白） */
+  --paper-card: #fffdf4;            /* 浮动卡片底色 */
+  --ink: #3f362c;                   /* 单词 / 标题（深暖墨，对比度 ≥9:1） */
+  --ink-soft: #6b6155;              /* 释义 / 次要文字（对比度 ≥4.5:1） */
+  --border: #d9cfc1;                /* 输入框 / 按钮边框 */
+  --border-focus: #9c8768;          /* 聚焦边框（更深，可见性更好） */
+  --accent: #b04a36;                /* 主按钮 / 强调色（朱砂红印章色，白字 ≥5:1） */
+  --accent-soft: rgba(176, 74, 54, 0.16);
+  --shadow: 0 2px 10px rgba(74, 60, 40, 0.08);
+  --shadow-lift: 0 6px 20px rgba(74, 60, 40, 0.10);
+  --toolbar-bg: rgba(253, 246, 227, 0.72);
+  --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman',
+                'Kaiti SC', 'KaiTi', 'STKaiti', 'Songti SC', 'STSong', 'SimSun',
+                'Noto Serif SC', serif;
+  --font-sans: -apple-system, 'Segoe UI', Roboto, 'PingFang SC',
+               'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+  /* 纸张纹理：轻微竖向亮光 + 底部暖色沉淀 + 极淡横向纸纹线 */
+  --paper-texture:
+    radial-gradient(130% 100% at 50% 0%, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0) 60%),
+    radial-gradient(120% 80% at 50% 112%, rgba(160, 120, 60, 0.055), rgba(160, 120, 60, 0) 55%),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 31px,
+      rgba(122, 106, 85, 0.04) 31px, rgba(122, 106, 85, 0.04) 32px);
+}
+
+/* 夜间模式：深色暖色调 */
+body.dark {
+  --paper: #2b2620;
+  --paper-card: #362f27;
+  --ink: #ede2cf;
+  --ink-soft: #c3b399;
+  --border: #4a4238;
+  --border-focus: #8a765a;
+  --accent: #b5573f;
+  --accent-soft: rgba(181, 87, 63, 0.18);
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 6px 22px rgba(0, 0, 0, 0.45);
+  --toolbar-bg: rgba(43, 38, 32, 0.72);
+  --paper-texture:
+    radial-gradient(130% 100% at 50% 0%, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0) 60%),
+    radial-gradient(120% 80% at 50% 112%, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0) 55%),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 31px,
+      rgba(200, 180, 150, 0.03) 31px, rgba(200, 180, 150, 0.03) 32px);
+}
+
+/* ---------- 基础重置 ---------- */
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--ink-soft);
+  background: var(--paper);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.4s ease-out, color 0.4s ease-out;
+}
+
+/* 键盘导航时的统一焦点样式（输入框用边框变色表示焦点） */
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- 纸张表面（首页与应用共享） ---------- */
+.home,
+#paper {
+  background-color: var(--paper);
+  background-image: var(--paper-texture);
+  transition: background-color 0.4s ease-out;
+}
+
+/* ==========================================================================
+   首页
+   ========================================================================== */
+.home {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  overflow-x: hidden;
+  overflow-y: auto;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.45s ease-out, visibility 0.45s;
+}
+.home.leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.home-inner {
+  position: relative;
+  z-index: 2;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px 64px;
+  max-width: 560px;
+  width: 100%;
+}
+
+.home-title-row {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+}
+.home-seal {
+  width: 46px;
+  height: 46px;
+  margin: 8px 0 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fffdf4;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 600;
+  border-radius: 7px;
+  transform: rotate(5deg);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.16), 0 4px 12px rgba(176, 74, 54, 0.35);
+  animation: seal-in 0.55s 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.home-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 62px;
+  font-weight: 600;
+  letter-spacing: 6px;
+  line-height: 1.1;
+  color: var(--ink);
+  animation: home-rise 0.7s ease-out both;
+}
+
+.home-underline {
+  display: block;
+  width: 72px;
+  height: 2px;
+  margin: 18px auto 0;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: underline-draw 0.6s 0.35s ease-out both;
+}
+
+.home-tagline {
+  margin: 22px 0 0;
+  font-size: 15px;
+  letter-spacing: 4px;
+  color: var(--ink-soft);
+  animation: home-rise 0.7s 0.25s ease-out both;
+}
+
+.home-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 38px;
+  animation: home-rise 0.7s 0.45s ease-out both;
+}
+
+.home-btn {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 11px 30px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink);
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out,
+              background-color 0.2s ease-out, border-color 0.2s ease-out;
+}
+.home-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--border-focus); }
+.home-btn:active { transform: translateY(0) scale(0.97); }
+.home-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fffdf4;
+}
+.home-btn.primary:hover { box-shadow: 0 8px 22px rgba(74, 60, 40, 0.18); }
+.home-btn.shake { animation: shake 0.4s ease-out; }
+
+.home-count {
+  margin-top: 30px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  animation: home-rise 0.7s 0.6s ease-out both;
+}
+
+/* ---------- 白纸夹（首页） ---------- */
+.shelf {
+  width: 100%;
+  margin-top: 40px;
+  animation: home-rise 0.7s 0.55s ease-out both;
+}
+.shelf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.shelf-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: var(--ink);
+}
+.shelf-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  transition: background-color 0.2s ease-out, border-color 0.2s ease-out, transform 0.2s ease-out;
+}
+.shelf-new:hover { border-color: var(--accent); background: var(--accent-soft); }
+.shelf-new:active { transform: scale(0.97); }
+.shelf-new svg { width: 14px; height: 14px; }
+
+.shelf-list {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 8px 4px 14px;
+  scroll-snap-type: x proximity;
+}
+.shelf-list::-webkit-scrollbar { height: 6px; }
+.shelf-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.shelf-list::-webkit-scrollbar-track { background: transparent; }
+
+.paper-card {
+  position: relative;
+  flex: 0 0 auto;
+  width: 150px;
+  min-height: 100px;
+  padding: 16px 16px 14px;
+  background: var(--paper-card);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  scroll-snap-align: start;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out;
+}
+/* 纸张微倾斜，营造一叠纸的感觉 */
+.paper-card:nth-child(odd) { transform: rotate(-0.6deg); }
+.paper-card:nth-child(even) { transform: rotate(0.6deg); }
+.paper-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift); border-color: var(--border-focus); }
+.paper-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
+.paper-card-name {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+  padding-right: 46px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.paper-card-count { font-size: 12px; color: var(--ink-soft); }
+.paper-card-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 2px;
+}
+.paper-icon-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  border-radius: 6px;
+  opacity: 0.5;
+  transition: opacity 0.2s ease-out, color 0.2s ease-out, background-color 0.2s ease-out;
+}
+.paper-card:hover .paper-icon-btn,
+.paper-card:focus-within .paper-icon-btn { opacity: 1; }
+.paper-icon-btn:hover { color: var(--accent); background: var(--accent-soft); }
+.paper-icon-btn svg { width: 14px; height: 14px; }
+
+.shelf-empty {
+  padding: 20px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  width: 100%;
+}
+
+/* ---------- 单词本（词库一键导入为白纸） ---------- */
+.shelf-head-actions { display: flex; align-items: center; gap: 8px; }
+.shelf-books { color: var(--ink); }
+.shelf-books:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+
+.wordbook-hint {
+  margin: 0;
+  padding: 12px 18px 2px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.wordbook-list { padding: 10px 12px 14px; }
+/* 面板内列表可滚动，书目变多也不会把卡片撑出可视区 */
+.wordbook-panel-card .panel-body { flex: 1 1 auto; min-height: 0; }
+
+.wordbook-group {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 14px 4px 6px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.wordbook-group:first-child { padding-top: 4px; }
+.wordbook-group-name {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 2px;
+}
+.wordbook-group-num { font-variant-numeric: tabular-nums; }
+
+.wordbook-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  background: var(--paper-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s ease-out, transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+.wordbook-card:last-child { margin-bottom: 0; }
+.wordbook-card:hover { border-color: var(--border-focus); transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+
+.wordbook-badge {
+  flex: 0 0 auto;
+  min-width: 54px;
+  padding: 10px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  line-height: 1.15;
+  text-align: center;
+}
+.wordbook-info { flex: 1 1 auto; min-width: 0; }
+.wordbook-name {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.wordbook-desc {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wordbook-count {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.wordbook-import {
+  flex: 0 0 auto;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--paper);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 7px 16px;
+  transition: filter 0.2s ease-out, transform 0.2s ease-out;
+}
+.wordbook-import:hover { filter: brightness(1.06); }
+.wordbook-import:active { transform: scale(0.96); }
+
+.wordbook-empty {
+  padding: 24px 18px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+/* 装饰性浮字：如墨迹般淡淡漂浮在纸上 */
+.home-deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.deco-word {
+  position: absolute;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-style: italic;
+  color: var(--ink-soft);
+  opacity: 0.14;
+  animation: float-word 7s ease-in-out infinite;
+}
+.deco-word:nth-child(2n) { font-size: 15px; animation-delay: -2.5s; }
+.deco-word:nth-child(3n) { font-size: 23px; animation-delay: -4.5s; }
+
+/* ==========================================================================
+   应用主体
+   ========================================================================== */
+.app {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.5s ease-out, visibility 0.5s;
+}
+.app.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+#paper {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+/* ---------- 顶部工具栏 ---------- */
+.toolbar {
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: none;   /* 容器不拦截点击，空隙可穿透到纸张 */
+}
+.toolbar > * { pointer-events: auto; }
+
+.brand {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.2s ease-out, transform 0.2s ease-out;
+}
+.brand:hover { color: var(--accent); }
+.brand:active { transform: scale(0.97); }
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+/* 工具栏里的「保存白纸」：当前纸名 + 铅笔，点击命名 */
+.paper-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: var(--toolbar-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: color 0.2s ease-out, border-color 0.2s ease-out, transform 0.2s ease-out;
+}
+.paper-name:hover { color: var(--ink); border-color: var(--border-focus); }
+.paper-name:active { transform: scale(0.97); }
+.paper-name svg { width: 13px; height: 13px; color: var(--accent); flex: 0 0 auto; }
+.paper-name span { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding: 6px;
+  border-radius: 10px;
+  background: var(--toolbar-bg);
+  border: 1px solid var(--border);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* 模式切换分段控件 */
+.mode-switch {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mode-btn,
+.icon-btn {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--ink-soft);
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: color 0.2s ease-out, background-color 0.2s ease-out,
+              border-color 0.2s ease-out, transform 0.2s ease-out;
+}
+.mode-btn:hover, .icon-btn:hover { transform: translateY(-1px); }
+.mode-btn:active, .icon-btn:active { transform: translateY(0) scale(0.97); }
+
+.mode-btn { border: none; border-radius: 0; }
+.mode-btn + .mode-btn { border-left: 1px solid var(--border); }
+.mode-btn:hover { color: var(--ink); }
+.mode-btn.active {
+  background: var(--accent);
+  color: #fffdf4;
+}
+
+.icon-btn {
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.icon-btn:hover { border-color: var(--border-focus); color: var(--ink); }
+.icon-btn.danger { color: #a87a6a; }
+.icon-btn.danger:hover { border-color: #b85c4a; color: #b85c4a; }
+.icon-btn svg { width: 16px; height: 16px; display: block; }
+
+/* 主题切换图标：日/夜各一个 SVG，随模式显隐 */
+.icon-sun { display: none; }
+body.dark .icon-moon { display: none; }
+body.dark .icon-sun { display: block; }
+
+/* 音效开关图标：开/关各一个 SVG，随静音状态显隐 */
+.icon-sound-off { display: none; }
+body.sound-off .icon-sound-on { display: none; }
+body.sound-off .icon-sound-off { display: block; }
+body.sound-off #btn-sound { opacity: .55; }
+
+/* 自动朗读图标：开/关各一个 SVG，随朗读状态显隐 */
+.icon-speak-off { display: none; }
+body.speak-off .icon-speak-on { display: none; }
+body.speak-off .icon-speak-off { display: block; }
+body.speak-off #btn-speak { opacity: .55; }
+
+/* 开关文字标签：让「音效」「朗读」两个纯图标按钮一眼可辨，不再混淆 */
+.icon-label {
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+/* 关闭态：标签加删除线，与变暗的图标一起明确表达「已静音」 */
+body.sound-off #btn-sound .icon-label,
+body.speak-off #btn-speak .icon-label {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+
+.count {
+  font-size: 13px;
+  color: var(--ink-soft);
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+/* ---------- 底部提示 ---------- */
+.hint {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  font-size: 13px;
+  color: var(--ink-soft);
+  opacity: 0.7;
+  pointer-events: none;
+  transition: opacity 0.4s ease-out;
+}
+
+/* ---------- 录入卡片 ---------- */
+.entry-card {
+  position: absolute;
+  z-index: 20;
+  width: 250px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  background: var(--paper-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lift);
+}
+/* 出现 / 关闭动画（.closing 需在 .appearing 之后声明以覆盖 animation） */
+.entry-card.appearing { animation: card-in 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+.entry-card.closing   { animation: card-out 0.22s ease-in forwards; }
+
+.entry-card input {
+  font-family: var(--font-sans);
+  font-size: 16px;          /* ≥16px 避免 iOS 聚焦缩放 */
+  width: 100%;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 9px 11px;
+  outline: none;
+  transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+.entry-card input::placeholder { color: var(--ink-soft); opacity: 0.55; }
+.entry-card input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+.entry-card .entry-word { font-family: var(--font-serif); font-size: 18px; }
+.entry-card .entry-def  { font-family: var(--font-sans); }
+
+.entry-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.entry-actions button {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 7px 14px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease-out;
+}
+.entry-actions .save-btn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fffdf4;
+}
+.entry-actions .save-btn:hover { filter: brightness(1.07); }
+.entry-actions .cancel-btn { background: transparent; color: var(--ink-soft); }
+.entry-actions .cancel-btn:hover { color: var(--ink); border-color: var(--border-focus); }
+
+/* ---------- 单词元素 ---------- */
+.word-card {
+  position: absolute;
+  z-index: 15;
+  min-width: 44px;
+  min-height: 44px;         /* 移动端可点击区域下限 */
+  padding: 12px 16px;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0;               /* 默认隐藏，等待 .appearing 动画淡入 */
+  background: transparent;  /* 默认如墨迹般直接写在纸上 */
+  border: 1px solid transparent;
+  box-shadow: none;
+  transition: background-color 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+/* 悬停 / 聚焦时轻微浮出卡片，提示可点击 */
+.word-card:hover { background: var(--paper-card); border-color: var(--border); box-shadow: var(--shadow); }
+
+/* 淡入 / 淡出动画（.fading 需在 .appearing 之后声明以覆盖 animation） */
+.word-card.appearing { animation: word-in 0.5s ease-out forwards; }
+.word-card.fading   { animation: word-out 0.4s ease-out forwards; }
+
+.word-text {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+  color: var(--ink);
+}
+
+/* 单词卡上的「重听」按钮：默认淡出，悬停/聚焦时浮现，不干扰阅读 */
+.word-speak {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--paper-card);
+  color: var(--accent);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(.8);
+  pointer-events: none;
+  transition: opacity .2s ease-out, transform .2s ease-out, border-color .2s ease-out;
+}
+.word-card:hover .word-speak,
+.word-card:focus-within .word-speak { opacity: 1; transform: scale(1); pointer-events: auto; }
+.word-speak:hover { border-color: var(--accent); }
+.word-speak:active { transform: scale(.9); }
+.word-speak svg { width: 14px; height: 14px; display: block; }
+/* 正在朗读：按钮放大并轻脉动，给出「此刻在发音」的反馈 */
+.word-card.speaking .word-speak { opacity: 1; transform: scale(1); pointer-events: auto; animation: speak-pulse .9s ease-in-out infinite; }
+@keyframes speak-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-soft); }
+  50%      { box-shadow: 0 0 0 6px var(--accent-soft); }
+}
+/* 触屏没有 hover，直接常显，避免"点不到" */
+@media (hover: none) {
+  .word-speak { opacity: .75; transform: scale(1); pointer-events: auto; }
+}
+
+.definition {
+  display: block;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin-top: 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  transition: max-height 0.35s ease-out, opacity 0.35s ease-out, margin-top 0.35s ease-out;
+}
+.word-card.open .definition {
+  max-height: 320px;
+  opacity: 1;
+  margin-top: 7px;
+}
+
+/* ---------- 点击涟漪（小巧柔和的落墨圆点） ---------- */
+.ripple {
+  position: absolute;
+  z-index: 4;
+  display: block;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;   /* 以点击点为中心 */
+  border-radius: 50%;
+  background: var(--accent-soft);
+  pointer-events: none;
+  transform: scale(0.4);
+  animation: ripple 0.45s ease-out forwards;
+}
+
+/* ---------- 统计面板 ---------- */
+.panel {
+  position: fixed;
+  inset: 0;
+  z-index: 110;   /* 需高于首页 #home 的 z-index:100，否则在首页打开对话框会被遮挡 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(40, 32, 20, 0.22);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out;
+}
+.panel.open { opacity: 1; pointer-events: auto; }
+
+.panel-card {
+  width: min(420px, calc(100vw - 32px));
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lift);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(10px) scale(0.97);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+.panel.open .panel-card { opacity: 1; transform: translateY(0) scale(1); }
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-head h2 { margin: 0; font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: var(--ink); }
+.panel-close {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--ink-soft);
+}
+.panel-close:hover { color: var(--ink); }
+.panel-body { overflow-y: auto; padding: 8px 0; }
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-word { font-family: var(--font-serif); font-size: 17px; font-weight: 600; color: var(--ink); }
+.stat-def  { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stat-count { color: var(--ink-soft); font-size: 13px; white-space: nowrap; }
+.empty { padding: 24px; text-align: center; color: var(--ink-soft); }
+
+/* ---------- 保存白纸（命名）对话框 ---------- */
+.paper-dialog-card { width: min(360px, calc(100vw - 32px)); }
+.paper-dialog-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
+.paper-dialog-hint { margin: 0; font-size: 13px; color: var(--ink-soft); }
+.paper-dialog-input {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  width: 100%;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+.paper-dialog-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-soft); }
+.paper-dialog-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.paper-dialog-actions button {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 7px 16px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease-out;
+}
+.paper-dialog-save { background: var(--accent); border-color: var(--accent); color: #fffdf4; }
+.paper-dialog-save:hover { filter: brightness(1.07); }
+.paper-dialog-cancel { background: transparent; color: var(--ink-soft); }
+.paper-dialog-cancel:hover { color: var(--ink); border-color: var(--border-focus); }
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  z-index: 120;   /* 保持在面板(.panel z-index:110)之上，空名称提示不被遮挡 */
+  max-width: calc(100vw - 32px);
+  text-align: center;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  background: var(--ink);
+  color: var(--paper);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- 关键帧动画 ---------- */
+@keyframes home-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes underline-draw {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes seal-in {
+  from { opacity: 0; transform: rotate(5deg) scale(0.4); }
+  to   { opacity: 1; transform: rotate(5deg) scale(1); }
+}
+@keyframes float-word {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50%      { transform: translateY(-14px) rotate(1.2deg); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes card-out {
+  to { opacity: 0; transform: translateY(4px) scale(0.98); }
+}
+@keyframes word-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }   /* 淡入 + 上浮 + 微缩放 */
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes word-out {
+  to { opacity: 0; }
+}
+@keyframes ripple {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* ---------- 小屏适配 ---------- */
+@media (max-width: 480px) {
+  .brand { font-size: 17px; }
+  .home-title { font-size: 44px; letter-spacing: 4px; }
+  .home-seal { width: 36px; height: 36px; font-size: 20px; margin-left: 12px; }
+  .word-text { font-size: 28px; }
+  .controls { gap: 4px; padding: 4px; }
+  .mode-btn, .icon-btn { padding: 5px 9px; font-size: 13px; }
+  .home-inner { padding: 32px 20px 56px; }
+  .shelf { margin-top: 32px; }
+  .paper-card { width: 132px; min-height: 92px; }
+  .paper-name span { max-width: 88px; }
+  .toolbar-left { gap: 6px; }
+}
+
+/* ---------- 无障碍：尊重系统「减少动态效果」偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---------- 浏览器表面（与整体设计一致） ---------- */
+::selection { background: var(--accent-soft); color: var(--ink); }
+input, textarea { caret-color: var(--accent); }
+
+/* ==========================================================================
+   游戏模式（切单词 · 60 秒）
+   ========================================================================== */
+
+/* 游戏进行时：纸张捕获滑动，禁用浏览器滚动手势 */
+#paper.paper--game {
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* 顶部时间条 */
+.game-timebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 26;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+.game-timebar.active { opacity: 1; }
+.game-timebar-fill {
+  height: 100%;
+  width: 100%;
+  background: var(--accent);
+  transform-origin: left center;
+  transition: width 0.18s linear;
+}
+
+/* HUD：倒计时 + 得分 */
+.game-hud {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 9px 22px;
+  background: var(--toolbar-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-out, visibility 0.3s;
+}
+.game-hud.active { opacity: 1; visibility: visible; }
+.game-timer,
+.game-score {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  white-space: nowrap;
+}
+.game-timer-value {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.game-timer-unit { font-size: 12px; color: var(--ink-soft); }
+.game-hud-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+}
+.game-score-value {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.game-score-label { font-size: 12px; color: var(--ink-soft); }
+
+/* 难度挡位（慢 / 标准 / 快）—— HUD 整体不拦截滑动，仅挡位按钮可点 */
+.game-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  pointer-events: auto;
+}
+.game-level-btn {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--ink-soft);
+  background: transparent;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: color 0.2s ease-out, background-color 0.2s ease-out;
+}
+.game-level-btn:hover { color: var(--ink); }
+.game-level-btn.active { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+
+/* 倒计时最后 10 秒：计时数字转强调色并轻微脉动 */
+.game-hud.low .game-timer-value {
+  color: var(--accent);
+  animation: low-pulse 1s ease-in-out infinite;
+}
+
+/* 开场倒计时 */
+.game-countdown {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease-out, visibility 0.25s;
+}
+.game-countdown.active { opacity: 1; visibility: visible; }
+.game-countdown-value {
+  font-family: var(--font-serif);
+  font-size: 104px;
+  font-weight: 600;
+  color: var(--ink);
+  text-shadow: 0 2px 24px rgba(74, 60, 40, 0.12);
+}
+.game-countdown-value.pop { animation: countdown-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* 抛出的单词 */
+.fruit-word {
+  position: absolute;
+  z-index: 16;
+  padding: 11px 18px;
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  color: var(--ink);
+  background: var(--paper-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lift);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* 斩断的两半：各自裁剪上下半，绕切口轴翻转落下 */
+.slice-half {
+  position: absolute;
+  z-index: 14;
+  padding: 11px 18px;
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  color: var(--ink);
+  background: var(--paper-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform, opacity;
+}
+.slice-half.top {
+  clip-path: inset(0 0 50% 0);
+  transform-origin: 50% 100%;   /* 绕底部切口翻转 */
+}
+.slice-half.bottom {
+  clip-path: inset(50% 0 0 0);
+  transform-origin: 50% 0%;     /* 绕顶部切口翻转 */
+}
+
+/* 释义浮现（短暂停留后消失） */
+.def-pop {
+  position: absolute;
+  z-index: 20;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.def-pop-text {
+  background: var(--paper-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lift);
+  padding: 8px 13px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: min(240px, 60vw);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+.def-pop.show .def-pop-text { opacity: 1; transform: translateY(-8px) scale(1); }
+.def-pop.hide .def-pop-text { opacity: 0; transform: translateY(-24px) scale(0.98); }
+
+/* 得分 +1 */
+.score-pop {
+  position: absolute;
+  z-index: 21;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--accent);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.28s ease-out, transform 0.5s ease-out;
+}
+.score-pop.show { opacity: 1; transform: translate(-50%, -130%); }
+
+/* 刀气（滑动轨迹）—— 参考 CCBlade / Fruit Ninja 的「条带 + 多层叠加」思路重做：
+   原实现是 3 条同轨迹路径简单叠加，问题在于：
+     1) 刀身只有一种线性渐变，中段是「死」的，看不到能量在刀路上流动；
+     2) 没有刀尖锥形收束，末端是一刀切的方形，不像刀；
+     3) 停手时整条刀气同时淡出，缺乏「刀锋掠过、余韵散开」的层次。
+   现在改为：
+     · 5 层叠加（外晕 → 柔光 → 刀身缎带 → 内芯高光 → 刀尖辉光 + 刀锋锐线）
+     · 刀身用「尾透明 → 中段实 → 刀尖白热」三段渐变，能量感沿刀路走
+     · 路径本身由 JS 生成「尾细头宽」的闭合缎带，刀尖处额外收成尖角
+     · 刀气停手后按 BLADE_TTL 自然消散，并叠加一层向外扩散的余辉
+   颜色由连击段位通过 --blade / --blade-tip 驱动。 */
+.blade-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0;
+  overflow: visible;
+  --blade: var(--accent);
+  --blade-tip: #fff6e8;
+  --blade-glow: rgba(176, 74, 54, 0.45);
+  --blade-core: #ffffff;
+  transition: opacity .18s ease-out;
+}
+/* 连击越高，刀气越「烫」：朱砂 → 橙铜 → 赤金 → 白热金 */
+.blade-layer[data-hot="1"] { --blade: #c2662f; --blade-tip: #ffe9c9; --blade-glow: rgba(194, 102, 47, 0.52); }
+.blade-layer[data-hot="2"] { --blade: #d9922e; --blade-tip: #fffdf2; --blade-glow: rgba(217, 146, 46, 0.58); }
+.blade-layer[data-hot="3"] { --blade: #f0b73c; --blade-tip: #ffffff; --blade-glow: rgba(240, 183, 60, 0.66); }
+body.dark .blade-layer { --blade-glow: rgba(213, 105, 79, 0.58); }
+
+/* 渐变停靠点：尾端透明 → 中段半实 → 刀尖白热，制造能量沿刀路流动的方向感。
+   注意中段（0.42/0.78）的透明度不能太低，否则刀身大半截会"看不见"，
+   只剩刀尖一团白 —— 这是第一版最大的问题。 */
+.blade-fade-0 { stop-color: var(--blade);      stop-opacity: 0; }
+.blade-fade-1 { stop-color: var(--blade);      stop-opacity: 0.55; }
+.blade-fade-2 { stop-color: var(--blade-tip);  stop-opacity: 0.88; }
+.blade-fade-3 { stop-color: var(--blade-tip);  stop-opacity: 1; }
+
+/* 第 1 层：外晕——最宽、最散，给刀气撑出「气场」 */
+.blade-halo { fill: url(#bladeFade); filter: url(#bladeBlurWide); opacity: 0.65; }
+/* 第 2 层：柔光——中等宽度，填住刀身与外晕之间的空档，避免边缘发虚 */
+.blade-glow { fill: url(#bladeFade); filter: url(#bladeBlur); opacity: 0.9; }
+/* 第 3 层：刀身缎带——主体，尾细头宽，能量最集中 */
+.blade-ribbon { fill: url(#bladeFade); }
+/* 第 4 层：内芯高光——沿中心线的细亮线，让刀有「刃」 */
+.blade-core {
+  fill: none;
+  stroke: var(--blade-core);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+/* 第 5 层：刀尖辉光——刀尖处一团白热光点 */
+.blade-tip { fill: var(--blade-core); filter: url(#bladeBlur); opacity: 1; }
+/* 第 6 层：刀锋锐线——紧贴刀身末端的一条细实线，收住刀尖，是"锋利"的关键 */
+.blade-edge {
+  fill: none;
+  stroke: var(--blade-tip);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.75;
+}
+
+/* 斩击瞬间沿刀路炸开的一道白光 —— 参考 Blade 素材的「亮线 + 两端锥形收束」：
+   用 clip-path 把矩形收成两头尖的刀痕，比原来的圆角矩形更像"被切开"。 */
+.slash-flash {
+  position: absolute;
+  z-index: 39;
+  width: 190px;
+  height: 3px;
+  margin: -1.5px 0 0 -95px;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 246, 232, 0.85) 30%,
+    #ffffff 50%,
+    rgba(255, 246, 232, 0.85) 70%,
+    rgba(255, 255, 255, 0) 100%);
+  /* 两头收尖：刀痕不该是齐头的 */
+  clip-path: polygon(0 50%, 8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%);
+  filter: drop-shadow(0 0 6px var(--blade-glow, rgba(176, 74, 54, 0.5)))
+          drop-shadow(0 0 14px rgba(255, 240, 214, 0.45));
+  animation: slash-out 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes slash-out {
+  0%   { opacity: 0; transform: rotate(var(--ang, 0deg)) scaleX(0.25) scaleY(0.6); }
+  18%  { opacity: 1; transform: rotate(var(--ang, 0deg)) scaleX(1.02) scaleY(2.6); }
+  55%  { opacity: 0.85; transform: rotate(var(--ang, 0deg)) scaleX(1.06) scaleY(1.1); }
+  100% { opacity: 0; transform: rotate(var(--ang, 0deg)) scaleX(1.18) scaleY(0.4); }
+}
+
+/* 结算面板 */
+.game-over-card { width: min(420px, calc(100vw - 32px)); }
+.game-over-body { padding: 20px 18px 8px; }
+.game-result-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  justify-content: center;
+}
+.game-result-score {
+  font-family: var(--font-serif);
+  font-size: 60px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.game-result-label { font-size: 14px; color: var(--ink-soft); letter-spacing: 2px; }
+.game-result-sub { margin: 12px 0 2px; text-align: center; font-size: 13px; color: var(--ink-soft); }
+.game-result-combo {
+  margin: 0 0 6px;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+.game-recap {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+  max-height: 220px;
+  overflow-y: auto;
+}
+.game-recap-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--border);
+}
+.game-recap-item:last-child { border-bottom: none; }
+.game-recap-word { font-family: var(--font-serif); font-size: 17px; font-weight: 600; color: var(--ink); }
+.game-recap-def { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+.game-over-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px 18px;
+}
+.game-over-actions button {
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease-out;
+}
+.game-over-primary { background: var(--accent); border-color: var(--accent); color: #fffdf4; }
+.game-over-primary:hover { filter: brightness(1.07); }
+.game-over-ghost { background: transparent; color: var(--ink-soft); }
+.game-over-ghost:hover { color: var(--ink); border-color: var(--border-focus); }
+
+@keyframes low-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.14); }
+}
+@keyframes countdown-pop {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ==========================================================================
+   连击显示（Combo）
+   环形倒计时随连击窗口（1.6s）一起流空 + 段位文案 + 放射刀芒 + 迸溅火花
+   ========================================================================== */
+.game-combo {
+  --combo-color: var(--accent);
+  --combo-glow: rgba(176, 74, 54, 0.30);
+  --combo-window: 1600ms;          /* 与 script.js 的 COMBO_WINDOW 保持一致 */
+  position: fixed;
+  top: 136px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 24;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.22s ease-out;
+  will-change: opacity;
+}
+.game-combo.active { opacity: 1; }
+
+/* 段位配色：连击越高越「烫」 */
+.game-combo.tier-1 { --combo-color: #b04a36; --combo-glow: rgba(176, 74, 54, 0.30); }
+.game-combo.tier-2 { --combo-color: #c2662f; --combo-glow: rgba(194, 102, 47, 0.34); }
+.game-combo.tier-3 { --combo-color: #d9922e; --combo-glow: rgba(217, 146, 46, 0.38); }
+.game-combo.tier-4 { --combo-color: #e0672b; --combo-glow: rgba(224, 103, 43, 0.42); }
+.game-combo.tier-5 { --combo-color: #f0b73c; --combo-glow: rgba(240, 183, 60, 0.48); }
+
+.combo-core {
+  position: relative;
+  width: 152px;
+  height: 152px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 环形进度：一圈流空的时间 = 连击窗口，断连就真的「接不上」 */
+.combo-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.combo-ring circle { fill: none; stroke-linecap: round; }
+.combo-ring-track { stroke: var(--border); stroke-width: 3; opacity: 0.5; }
+.combo-ring-fill {
+  stroke: var(--combo-color);
+  stroke-width: 5;
+  stroke-dasharray: 389.6;          /* 2πr，r = 62 */
+  stroke-dashoffset: 0;
+  filter: drop-shadow(0 0 6px var(--combo-glow));
+}
+.game-combo.pop .combo-ring-fill { animation: combo-drain var(--combo-window) linear forwards; }
+@keyframes combo-drain {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: 389.6; }
+}
+
+/* 放射刀芒（缓慢自转，靠遮罩只留一圈） */
+.combo-rays {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg,
+    var(--combo-color) 0deg 2.4deg, transparent 2.4deg 15deg);
+  -webkit-mask: radial-gradient(circle at 50% 50%, transparent 0 48%, #000 51% 64%, transparent 68%);
+  mask: radial-gradient(circle at 50% 50%, transparent 0 48%, #000 51% 64%, transparent 68%);
+  opacity: 0.26;
+  animation: combo-spin 9s linear infinite;
+}
+@keyframes combo-spin { to { transform: rotate(360deg); } }
+
+/* 每次升连击时从中心荡开的一圈冲击波 */
+.combo-shock {
+  position: absolute;
+  inset: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--combo-color);
+  opacity: 0;
+}
+.game-combo.pop .combo-shock { animation: combo-shock 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes combo-shock {
+  0%   { opacity: 0.75; transform: scale(0.55); }
+  100% { opacity: 0;    transform: scale(1.5); }
+}
+
+/* 数字本体 */
+.combo-num {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+  font-family: var(--font-serif);
+  color: var(--combo-color);
+  text-shadow: 0 2px 20px var(--combo-glow), 0 0 2px rgba(255, 255, 255, 0.35);
+}
+.combo-x {
+  font-size: 34px;
+  font-weight: 600;
+  opacity: 0.85;
+  transform: translateY(-5px);
+}
+.game-combo-count {
+  font-size: 78px;
+  font-weight: 700;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+.game-combo.pop .combo-num { animation: combo-pop 0.42s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes combo-pop {
+  0%   { transform: scale(0.62) rotate(-5deg); }
+  45%  { transform: scale(1.16) rotate(1.5deg); }
+  72%  { transform: scale(0.97) rotate(-0.5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.game-combo-label {
+  margin-top: 4px;
+  font-size: 12px;
+  letter-spacing: 6px;
+  text-indent: 6px;
+  color: var(--ink-soft);
+  opacity: 0.75;
+}
+.combo-tier {
+  margin-top: 2px;
+  font-family: var(--font-serif);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 5px;
+  text-indent: 5px;
+  color: var(--combo-color);
+  text-shadow: 0 1px 12px var(--combo-glow);
+}
+.game-combo.pop .combo-tier { animation: tier-in 0.4s ease-out; }
+@keyframes tier-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* 迸溅火花（JS 按段位数量生成，--a 角度 / --dist 射程） */
+.combo-sparks { position: absolute; inset: 0; z-index: 3; }
+.combo-spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%;
+  background: var(--combo-color);
+  box-shadow: 0 0 8px var(--combo-glow);
+  animation: spark-fly var(--dur, 0.6s) cubic-bezier(0.16, 0.9, 0.3, 1) forwards;
+}
+@keyframes spark-fly {
+  0%   { opacity: 0; transform: rotate(var(--a, 0deg)) translateX(8px)   scale(0.7); }
+  25%  { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--a, 0deg)) translateX(var(--dist, 72px)) scale(0.25); }
+}
+
+/* ---------- 游戏小屏适配 ---------- */
+@media (max-width: 480px) {
+  .game-hud { top: 62px; gap: 12px; padding: 8px 18px; }
+  .game-timer-value, .game-score-value { font-size: 22px; }
+  .game-level-btn { padding: 4px 5px; }
+  .game-countdown-value { font-size: 84px; }
+  .game-combo { top: 114px; }
+  .combo-core { width: 116px; height: 116px; }
+  .game-combo-count { font-size: 56px; }
+  .combo-x { font-size: 26px; transform: translateY(-4px); }
+  .combo-tier { font-size: 18px; }
+  .game-combo-label { font-size: 11px; letter-spacing: 4px; text-indent: 4px; }
+  .fruit-word, .slice-half { font-size: 24px; padding: 9px 15px; }
+  .game-result-score { font-size: 48px; }
+}
