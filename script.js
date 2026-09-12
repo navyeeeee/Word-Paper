@@ -474,12 +474,21 @@
     return Array.isArray(raw) ? raw : [];
   }
 
+  /** 给定序号生成网格坐标（比例 0~1）：批量导入的词错落铺开，避免全叠在一点 */
+  function gridSpot(i) {
+    var col = i % 6;
+    var row = Math.floor(i / 6) % 5;
+    return {
+      x: clamp(0.12 + col * 0.15 + (Math.random() - 0.5) * 0.04, 0.04, 0.96),
+      y: clamp(0.22 + row * 0.14 + (Math.random() - 0.5) * 0.04, 0.06, 0.94)
+    };
+  }
+
   /** 解析词库紧凑数据 → 标准单词对象数组（含网格定位，避免完全重叠） */
   function parseBookWords(book) {
     var text = (book && book.data) || '';
     if (!text) return [];
     var lines = text.split('\n');
-    var cols = 6;
     var out = [];
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i];
@@ -488,14 +497,13 @@
       var w = (bar === -1 ? line : line.slice(0, bar)).trim();
       if (!w) continue;
       var d = bar === -1 ? '' : line.slice(bar + 1);
-      var col = i % cols;
-      var row = Math.floor(i / cols) % 5;
+      var spot = gridSpot(out.length);
       out.push({
         id: makeId(),
         word: w,
         definition: d,
-        x: clamp(0.12 + col * 0.15 + (Math.random() - 0.5) * 0.04, 0.04, 0.96),
-        y: clamp(0.22 + row * 0.14 + (Math.random() - 0.5) * 0.04, 0.06, 0.94),
+        x: spot.x,
+        y: spot.y,
         createdAt: Date.now(),
         recallCount: 0
       });
@@ -672,6 +680,8 @@
     if (prev === 'recall') stopSpeaking();   // 离开记忆模式时别让语音继续念
 
     mode = next;
+    // 供 CSS 使用：手机端游戏进行时收起次要按钮，把屏幕让给游戏
+    document.body.classList.toggle('game-mode', mode === 'game');
     syncModeButtons();
 
     if (mode === 'entry') {
@@ -705,6 +715,7 @@
 
   function goHome() {
     stopGame();
+    document.body.classList.remove('game-mode');
     dismissWord();
     cancelEntry(false);
     closeStats();
@@ -839,6 +850,15 @@
       speakBtnOnCard.addEventListener('click', function (e) {
         e.stopPropagation();
         speakWord(word.word, card);
+      });
+    }
+
+    // 卡片上的「删除」按钮：当场发现写错的单词，不必再翻统计面板
+    var delBtnOnCard = card.querySelector('.word-del');
+    if (delBtnOnCard) {
+      delBtnOnCard.addEventListener('click', function (e) {
+        e.stopPropagation();
+        removeWord(word.id);
       });
     }
 
@@ -996,19 +1016,85 @@
   });
 
   /* ============ 工具栏：导出 / 导入（当前白纸） ============ */
+  // 导出格式：**纯文本 .txt，每行一条「单词|释义」**（与内置词库 wordbooks.js 同格式）。
+  // 用记事本 / Excel 就能直接看和改；导入时同样支持这种 txt，并向下兼容旧的 JSON 备份。
+  function serializeWords(list) {
+    return list.map(function (w) {
+      return w.word + '|' + (w.definition || '');
+    }).join('\n');
+  }
+
+  /**
+   * 解析导入文件内容 → 标准单词对象数组。
+   * · 以 [ 或 { 开头 → 按旧版 JSON 备份解析（字段全量保留）
+   * · 其余 → 按文本解析，每行「单词 分隔符 释义」，分隔符支持 | ｜ 与制表符
+   * startIndex 用于接续网格定位，避免同一张纸上导入多次时坐标重复
+   */
+  function parseImportText(raw, startIndex) {
+    var text = String(raw == null ? '' : raw).replace(/^\ufeff/, '');
+    if (!text.trim()) return [];
+    var base = Number(startIndex) || 0;
+    var out = [];
+
+    if (text.trim().charAt(0) === '[' || text.trim().charAt(0) === '{') {
+      var data = JSON.parse(text);
+      if (!Array.isArray(data)) throw new Error('JSON 不是数组');
+      data.forEach(function (w) {
+        if (!w || typeof w.word !== 'string') return;
+        var spot = gridSpot(base + out.length);
+        out.push({
+          id: w.id || makeId(),
+          word: w.word,
+          definition: w.definition || '',
+          x: Number(w.x) || spot.x,
+          y: Number(w.y) || spot.y,
+          createdAt: w.createdAt || Date.now(),
+          recallCount: Number(w.recallCount) || 0
+        });
+      });
+      return out;
+    }
+
+    var seps = ['|', '｜', '\t'];
+    text.split(/\r?\n/).forEach(function (line) {
+      var s = line.replace(/\ufeff/g, '').trim();
+      if (!s || s.charAt(0) === '#') return;   // 跳过空行与注释
+      var at = -1;
+      for (var i = 0; i < seps.length; i++) {
+        var p = s.indexOf(seps[i]);
+        if (p !== -1 && (at === -1 || p < at)) at = p;
+      }
+      var word = (at === -1 ? s : s.slice(0, at)).trim();
+      var def = at === -1 ? '' : s.slice(at + 1).trim();
+      if (!word) return;
+      var spot = gridSpot(base + out.length);
+      out.push({
+        id: makeId(),
+        word: word,
+        definition: def,
+        x: spot.x,
+        y: spot.y,
+        createdAt: Date.now(),
+        recallCount: 0
+      });
+    });
+    return out;
+  }
+
   exportBtn.addEventListener('click', function () {
     if (words.length === 0) { showToast('当前白纸暂无数据可导出'); return; }
     var label = (activePaper() && activePaper().name) || 'paper';
-    var blob = new Blob([JSON.stringify(words, null, 2)], { type: 'application/json' });
+    // 头部 BOM：Windows 记事本 / Excel 打开时不会把中文认成乱码
+    var blob = new Blob(['\ufeff' + serializeWords(words)], { type: 'text/plain;charset=utf-8' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
-    a.download = label + '-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download = label + '-' + new Date().toISOString().slice(0, 10) + '.txt';
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    showToast('已导出「' + label + '」的 ' + words.length + ' 个单词');
+    showToast('已导出「' + label + '」' + words.length + ' 个单词（每行「单词|释义」）');
   });
 
   importBtn.addEventListener('click', function () { importFileInput.click(); });
@@ -1019,24 +1105,13 @@
     var reader = new FileReader();
     reader.onload = function () {
       try {
-        var data = JSON.parse(reader.result);
-        if (!Array.isArray(data)) throw new Error('格式错误');
-        var imported = data.filter(function (w) { return w && typeof w.word === 'string'; });
-        imported.forEach(function (w) {
-          words.push({
-            id: w.id || makeId(),
-            word: w.word,
-            definition: w.definition || '',
-            x: Number(w.x) || 0,
-            y: Number(w.y) || 0,
-            createdAt: w.createdAt || Date.now(),
-            recallCount: Number(w.recallCount) || 0
-          });
-        });
+        var imported = parseImportText(reader.result, words.length);
+        if (!imported.length) throw new Error('没有可导入的单词');
+        imported.forEach(function (w) { words.push(w); });
         saveWords();
         showToast('已导入 ' + imported.length + ' 个单词到当前白纸');
       } catch (err) {
-        showToast('导入失败：文件格式不正确');
+        showToast('导入失败：文件格式不正确（支持 .txt 每行「单词|释义」或旧版 .json）');
       }
     };
     reader.readAsText(file);
@@ -1061,6 +1136,26 @@
   function closeStats() {
     statsPanel.classList.remove('open');
     statsPanel.setAttribute('aria-hidden', 'true');
+  }
+
+  /**
+   * 从当前白纸删除一个单词（统计面板 / 屏上单词卡共用）。
+   * 确认后：原地摘掉 → 落盘 → 屏上卡片与打开中的统计面板同步刷新。
+   */
+  function removeWord(id) {
+    var idx = -1;
+    for (var i = 0; i < words.length; i++) if (words[i].id === id) { idx = i; break; }
+    if (idx === -1) return;
+    var w = words[idx];
+    var label = w.word || '这个单词';
+    if (!window.confirm('确定要删除「' + label + '」' + (w.definition ? '（' + w.definition + '）' : '') +
+        '吗？此操作不可恢复。')) return;
+
+    words.splice(idx, 1);            // 原地修改，保持对 activePaper.words 的引用
+    saveWords();
+    if (currentWordEl && currentWordEl.dataset && currentWordEl.dataset.id === id) dismissWord();
+    if (statsPanel.classList.contains('open')) renderStats();
+    showToast('已删除「' + label + '」');
   }
 
   function renderStats() {
@@ -1088,9 +1183,19 @@
       countSpan.className = 'stat-count';
       countSpan.textContent = (w.recallCount || 0) + ' 次';
 
+      // 删除按钮：录错 / 写错的单词在这里一键清掉，不用整张白纸重来
+      var delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'stat-del';
+      delBtn.setAttribute('aria-label', '删除单词「' + w.word + '」');
+      delBtn.title = '删除这个单词';
+      delBtn.innerHTML = ICON_TRASH;
+      delBtn.addEventListener('click', function () { removeWord(w.id); });
+
       row.appendChild(wordSpan);
       row.appendChild(defSpan);
       row.appendChild(countSpan);
+      row.appendChild(delBtn);
       statsList.appendChild(row);
     });
   }
@@ -1753,6 +1858,20 @@
     pop.style.left = cx + 'px';
     pop.style.top = cy + 'px';
     paper.appendChild(pop);
+
+    // 单词贴着屏幕边缘被切开时，释义框会有一半落在视口外：
+    // 这里量出真实尺寸后把中心点收进可视区，保证整框可见、不变形。
+    var bw = pop.offsetWidth;
+    var bh = pop.offsetHeight;
+    var pad = 10;
+    var x = window.innerWidth > bw + pad * 2
+      ? clamp(cx, bw / 2 + pad, window.innerWidth - bw / 2 - pad)
+      : window.innerWidth / 2;
+    var y = window.innerHeight > bh + pad * 2
+      ? clamp(cy, bh / 2 + pad, window.innerHeight - bh / 2 - pad)
+      : window.innerHeight / 2;
+    pop.style.left = x + 'px';
+    pop.style.top = y + 'px';
 
     requestAnimationFrame(function () {
       requestAnimationFrame(function () { pop.classList.add('show'); });

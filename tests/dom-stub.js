@@ -76,9 +76,15 @@ function El(tag) {
   this._html = '';
   this._content = null;
   this.value = '';
-  this.offsetWidth = 80;
-  this.offsetHeight = 30;
 }
+Object.defineProperty(El.prototype, 'offsetWidth', {
+  get: function () { return this.classList.contains('def-pop') ? 240 : 80; },
+  set: function () { /* 尺寸由 class 决定，忽略写入 */ }
+});
+Object.defineProperty(El.prototype, 'offsetHeight', {
+  get: function () { return this.classList.contains('def-pop') ? 40 : 30; },
+  set: function () { /* 同上 */ }
+});
 
 Object.defineProperty(El.prototype, 'className', {
   get: function () { return Array.from(this.classList._set).join(' '); },
@@ -196,7 +202,8 @@ function buildTemplateContent(kind) {
     var a = new El('span'); a.className = 'word-text';
     var b = new El('span'); b.className = 'definition';
     var sp = new El('button'); sp.className = 'word-speak';   // 卡片上的「重听」按钮
-    root.appendChild(a); root.appendChild(b); root.appendChild(sp);
+    var dp = new El('button'); dp.className = 'word-del';     // 卡片上的「删除」按钮
+    root.appendChild(a); root.appendChild(b); root.appendChild(sp); root.appendChild(dp);
   }
   return { firstElementChild: root };
 }

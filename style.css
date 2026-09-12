@@ -21,6 +21,9 @@
   --shadow: 0 2px 10px rgba(74, 60, 40, 0.08);
   --shadow-lift: 0 6px 20px rgba(74, 60, 40, 0.10);
   --toolbar-bg: rgba(253, 246, 227, 0.72);
+  /* 滚动条滑块：日间用暖灰，夜间换成浅米色 —— 关键是夜间不能沿用浅底颜色 */
+  --scroll-thumb: rgba(122, 106, 85, 0.32);
+  --scroll-thumb-hover: rgba(122, 106, 85, 0.55);
   --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman',
                 'Kaiti SC', 'KaiTi', 'STKaiti', 'Songti SC', 'STSong', 'SimSun',
                 'Noto Serif SC', serif;
@@ -47,6 +50,8 @@ body.dark {
   --shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
   --shadow-lift: 0 6px 22px rgba(0, 0, 0, 0.45);
   --toolbar-bg: rgba(43, 38, 32, 0.72);
+  --scroll-thumb: rgba(206, 188, 158, 0.26);
+  --scroll-thumb-hover: rgba(206, 188, 158, 0.46);
   --paper-texture:
     radial-gradient(130% 100% at 50% 0%, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0) 60%),
     radial-gradient(120% 80% at 50% 112%, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0) 55%),
@@ -644,6 +649,8 @@ body.speak-off #btn-speak .icon-label {
   left: 50%;
   transform: translateX(-50%);
   z-index: 5;
+  max-width: calc(100vw - 32px);
+  text-align: center;      /* 折行时两行都居中，而不是左边对齐 */
   font-size: 13px;
   color: var(--ink-soft);
   opacity: 0.7;
@@ -774,8 +781,36 @@ body.speak-off #btn-speak .icon-label {
 }
 /* 触屏没有 hover，直接常显，避免"点不到" */
 @media (hover: none) {
-  .word-speak { opacity: .75; transform: scale(1); pointer-events: auto; }
+  .word-speak, .word-del { opacity: .75; transform: scale(1); pointer-events: auto; }
 }
+
+/* 单词卡上的「删除」按钮：与「重听」左右对称，删掉写错的这条记录 */
+.word-del {
+  position: absolute;
+  top: -9px;
+  left: -9px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--paper-card);
+  color: var(--ink-soft);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(.8);
+  pointer-events: none;
+  transition: opacity .2s ease-out, transform .2s ease-out,
+              border-color .2s ease-out, color .2s ease-out;
+}
+.word-card:hover .word-del,
+.word-card:focus-within .word-del { opacity: 1; transform: scale(1); pointer-events: auto; }
+.word-del:hover { border-color: #b85c4a; color: #b85c4a; }
+.word-del:active { transform: scale(.9); }
+.word-del svg { width: 13px; height: 13px; display: block; }
 
 .definition {
   display: block;
@@ -862,7 +897,7 @@ body.speak-off #btn-speak .icon-label {
 
 .stat-row {
   display: grid;
-  grid-template-columns: 1fr 2fr auto;
+  grid-template-columns: 1fr 2fr auto auto;
   gap: 10px;
   align-items: center;
   padding: 10px 18px;
@@ -873,6 +908,24 @@ body.speak-off #btn-speak .icon-label {
 .stat-word { font-family: var(--font-serif); font-size: 17px; font-weight: 600; color: var(--ink); }
 .stat-def  { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stat-count { color: var(--ink-soft); font-size: 13px; white-space: nowrap; }
+/* 统计面板每行末尾的删除按钮：删掉录错的单词 */
+.stat-del {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color 0.2s ease-out, border-color 0.2s ease-out, background-color 0.2s ease-out;
+}
+.stat-del:hover { color: #b85c4a; border-color: #b85c4a; background: rgba(184, 92, 74, 0.08); }
+.stat-del:active { transform: scale(0.94); }
+.stat-del svg { width: 15px; height: 15px; display: block; }
 .empty { padding: 24px; text-align: center; color: var(--ink-soft); }
 
 /* ---------- 保存白纸（命名）对话框 ---------- */
@@ -969,19 +1022,121 @@ body.speak-off #btn-speak .icon-label {
   to { transform: scale(4); opacity: 0; }
 }
 
-/* ---------- 小屏适配 ---------- */
-@media (max-width: 480px) {
-  .brand { font-size: 17px; }
+/* ==========================================================================
+   小屏适配（手机）
+   问题：原来工具栏所有按钮挤成一团（gap 4px、padding 5px 9px，高度仅 ~26px），
+   手机上既点不准也看不清。这里改成：
+     · 工具栏拆两行 —— 第一行「标题 / 纸名」，第二行整块操作区
+     · 操作区用 4 列网格：模式切换独占一行（三等分大按钮），其余按钮各占一格
+     · 所有触摸目标 ≥ 44px，间距 8px，符合手指点按的舒适区
+     · 进入游戏后收起标题行与次要按钮，把整屏让给游戏
+   ========================================================================== */
+@media (max-width: 600px) {
+  /* —— 首页 —— */
   .home-title { font-size: 44px; letter-spacing: 4px; }
   .home-seal { width: 36px; height: 36px; font-size: 20px; margin-left: 12px; }
-  .word-text { font-size: 28px; }
-  .controls { gap: 4px; padding: 4px; }
-  .mode-btn, .icon-btn { padding: 5px 9px; font-size: 13px; }
   .home-inner { padding: 32px 20px 56px; }
+  .home-actions { gap: 12px; margin-top: 30px; }
+  .home-btn { padding: 13px 26px; min-height: 46px; }
   .shelf { margin-top: 32px; }
-  .paper-card { width: 132px; min-height: 92px; }
-  .paper-name span { max-width: 88px; }
-  .toolbar-left { gap: 6px; }
+  .hint { bottom: 14px; font-size: 12px; }
+  .shelf-new { padding: 10px 16px; font-size: 14px; min-height: 42px; }
+  .shelf-new svg { width: 16px; height: 16px; }
+  .paper-card { width: 160px; min-height: 104px; }   /* 略放宽，白纸名字不被图标挤成省略号 */
+  .paper-icon-btn { width: 36px; height: 36px; }
+  .paper-card-actions { gap: 6px; top: 6px; right: 6px; }
+
+  /* —— 工具栏 —— */
+  .toolbar {
+    top: 8px;
+    left: 10px;
+    right: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .toolbar-left { gap: 8px; }
+  .brand { font-size: 17px; padding: 6px; }
+  .paper-name { padding: 9px 13px; }
+  .paper-name span { max-width: 96px; }
+
+  .controls {
+    flex: 1 1 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));   /* 四列等宽，不因内容宽窄参差 */
+    gap: 8px;
+    padding: 8px;
+    border-radius: 14px;
+  }
+  /* 模式切换独占一行，三个模式三等分 → 又大又好点 */
+  .mode-switch { grid-column: 1 / -1; }
+  .mode-btn {
+    flex: 1 1 0;
+    padding: 12px 6px;
+    font-size: 15px;
+  }
+  .icon-btn {
+    padding: 11px 8px;
+    font-size: 14px;
+    min-height: 46px;
+    border-radius: 10px;
+  }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .icon-label { font-size: 14px; }
+  /* 单词计数排在最后，占第 3 行末尾一格：7 个按钮 + 计数 = 4×2 正好两整行 */
+  .count {
+    order: 99;
+    padding: 0;
+    text-align: center;
+    align-self: center;
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: normal;
+  }
+
+  /* —— 单词卡 / 录入卡 —— */
+  .word-text { font-size: 28px; }
+  .word-speak, .word-del { width: 32px; height: 32px; }
+  .word-speak svg { width: 16px; height: 16px; }
+  .word-del svg { width: 15px; height: 15px; }
+  .entry-card { width: min(280px, calc(100vw - 32px)); }
+  .entry-actions button { padding: 10px 18px; }
+
+  /* —— 面板 —— */
+  .panel-card { max-height: 82vh; }
+  .panel-close {
+    width: 44px;
+    height: 44px;
+    margin: -8px -8px -8px 0;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* 统计行改成两行两列：第 1 行「单词 · 次数 · 删除」，第 2 行释义占满，
+     删除键固定在右上角，比原来多占一整行更省高度、也更好点 */
+  .stat-row {
+    grid-template-columns: 1fr auto auto;
+    gap: 4px 8px;
+    padding: 12px 14px;
+  }
+  .stat-word { grid-area: 1 / 1; }
+  .stat-count { grid-area: 1 / 2; align-self: center; }
+  .stat-del { grid-area: 1 / 3; width: 40px; height: 40px; }
+  .stat-del svg { width: 17px; height: 17px; }
+  .stat-def { grid-area: 2 / 1 / 3 / 4; white-space: normal; }
+  .wordbook-hint { padding: 12px 16px 2px; }
+  .wordbook-card { gap: 10px; padding: 12px; }
+  .wordbook-import { padding: 10px 18px; min-height: 42px; }
+  .wordbook-list { padding: 8px 10px 12px; }
+  .paper-dialog-actions button { padding: 11px 20px; }
+}
+
+/* 游戏进行中：手机上收起标题行与「统计/导出/导入/清除/主题/音效/朗读」，
+   只留模式切换，避免工具栏把游戏画面压掉一大块 */
+@media (max-width: 600px) {
+  body.game-mode .toolbar-left { display: none; }
+  body.game-mode .controls .icon-btn,
+  body.game-mode .controls .count { display: none; }
 }
 
 /* ---------- 无障碍：尊重系统「减少动态效果」偏好 ---------- */
@@ -996,6 +1151,25 @@ body.speak-off #btn-speak .icon-label {
 /* ---------- 浏览器表面（与整体设计一致） ---------- */
 ::selection { background: var(--accent-soft); color: var(--ink); }
 input, textarea { caret-color: var(--accent); }
+
+/* ---------- 滚动条：颜色全部走主题变量 ----------
+   默认滚动条用的是系统浅色，夜间模式下会在深底上亮出一截白条，非常割裂。
+   Firefox / 新版 Chromium 认 scrollbar-color，WebKit 内核（Chrome / Edge /
+   Electron 桌面版 / Safari）认 ::-webkit-scrollbar-*，两套都写才能全覆盖。 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-thumb);
+  border: 2px solid transparent;   /* 透明边框把滑块收窄，视觉上更细 */
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--scroll-thumb-hover); }
+::-webkit-scrollbar-corner { background: transparent; }
 
 /* ==========================================================================
    游戏模式（切单词 · 60 秒）
@@ -1186,6 +1360,12 @@ input, textarea { caret-color: var(--accent); }
   z-index: 20;
   transform: translate(-50%, -50%);
   pointer-events: none;
+  /* 宽度必须由内容决定（max-content）：绝对定位盒子的可用宽度 =
+     容器宽 - left，单词在屏幕右缘被切开时可用宽度只剩几十像素，
+     收缩成一条窄缝 → 释义被挤成七八行。改成 max-content 后
+     宽度只受 max-width 约束，再交给 JS 把整体收回可视区。 */
+  width: max-content;
+  max-width: calc(100vw - 24px);
 }
 .def-pop-text {
   background: var(--paper-card);
@@ -1197,7 +1377,7 @@ input, textarea { caret-color: var(--accent); }
   font-size: 14px;
   line-height: 1.5;
   color: var(--ink-soft);
-  max-width: min(240px, 60vw);
+  max-width: min(260px, 70vw);
   text-align: center;
   opacity: 0;
   transform: translateY(8px) scale(0.96);
@@ -1558,13 +1738,13 @@ body.dark .blade-layer { --blade-glow: rgba(213, 105, 79, 0.58); }
   100% { opacity: 0; transform: rotate(var(--a, 0deg)) translateX(var(--dist, 72px)) scale(0.25); }
 }
 
-/* ---------- 游戏小屏适配 ---------- */
-@media (max-width: 480px) {
-  .game-hud { top: 62px; gap: 12px; padding: 8px 18px; }
+/* ---------- 游戏小屏适配（工具栏在游戏时只留一行模式切换，HUD 顺势下移） ---------- */
+@media (max-width: 600px) {
+  .game-hud { top: 80px; gap: 12px; padding: 8px 18px; }
   .game-timer-value, .game-score-value { font-size: 22px; }
-  .game-level-btn { padding: 4px 5px; }
+  .game-level-btn { padding: 8px 10px; min-height: 38px; }
   .game-countdown-value { font-size: 84px; }
-  .game-combo { top: 114px; }
+  .game-combo { top: 160px; }   /* HUD 底边 148px 之下再留 12px */
   .combo-core { width: 116px; height: 116px; }
   .game-combo-count { font-size: 56px; }
   .combo-x { font-size: 26px; transform: translateY(-4px); }
@@ -1572,4 +1752,5 @@ body.dark .blade-layer { --blade-glow: rgba(213, 105, 79, 0.58); }
   .game-combo-label { font-size: 11px; letter-spacing: 4px; text-indent: 4px; }
   .fruit-word, .slice-half { font-size: 24px; padding: 9px 15px; }
   .game-result-score { font-size: 48px; }
+  .game-over-actions button { min-height: 46px; }
 }

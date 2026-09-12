@@ -4,7 +4,7 @@
   <meta charset="UTF-8" data-page-node-id="IfeB5cBBHBlBftA2XgDHlq">
   <!-- 移动端适配；输入框字体 ≥16px，避免 iOS 聚焦时自动放大 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="sIjS2nCwrZdRbOdLNGgGak">
-  <meta name="version" content="v1.4.2" data-page-node-id="verTag">
+  <meta name="version" content="v1.5.0" data-page-node-id="verTag">
   <title>白纸单词</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" data-page-node-id="xFhFvGmY4qDpM1UJV1e7Bd">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin data-page-node-id="kLnrAfGFRU8ptZXmyt0Bl1">
@@ -73,8 +73,8 @@
         </div>
         <span class="count" id="word-count" aria-live="polite" data-page-node-id="G74tvHlQbv4X9C6zYL7c6J">0 个单词</span>
         <button id="btn-stats" class="icon-btn" aria-label="查看记忆统计" data-page-node-id="WoYrEQrzT0p0CvIi6DUAgJ">统计</button>
-        <button id="btn-export" class="icon-btn" aria-label="导出单词数据" data-page-node-id="l89GTlCznBXie7lrcqlk6Q">导出</button>
-        <button id="btn-import" class="icon-btn" aria-label="导入单词数据" data-page-node-id="GIvcvzQJ3Txy75fqvMFy76">导入</button>
+        <button id="btn-export" class="icon-btn" aria-label="导出为 txt 文本（每行：单词|释义）" title="导出为 txt（每行：单词|释义）" data-page-node-id="l89GTlCznBXie7lrcqlk6Q">导出</button>
+        <button id="btn-import" class="icon-btn" aria-label="导入 txt 或 json 单词文件" title="导入 txt / json 单词文件" data-page-node-id="GIvcvzQJ3Txy75fqvMFy76">导入</button>
         <button id="btn-clear" class="icon-btn danger" aria-label="清除所有单词" data-page-node-id="G5eRJf0MjWCqIbu2PFmiCI">清除</button>
         <button id="btn-theme" class="icon-btn" aria-label="切换到夜间模式" data-page-node-id="6KJWS3twjB77eMU5IbGyri">
           <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="6FBOyw3aZo2e1pZTZRQd9p"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" data-page-node-id="58BKMUoFQ8X3U3MArkPMto"/></svg>
@@ -99,7 +99,7 @@
           </svg>
           <span class="icon-label" data-page-node-id="lblSpeakTxt">朗读</span>
         </button>
-        <input type="file" id="import-file" accept="application/json,.json" hidden data-page-node-id="CWkz4NQhTnl3zwqV7dLQjS">
+        <input type="file" id="import-file" accept=".txt,text/plain,.json,application/json" hidden data-page-node-id="CWkz4NQhTnl3zwqV7dLQjS">
       </div>
     </header>
 
@@ -235,6 +235,9 @@
           <path d="M15.4 8.6a4.8 4.8 0 0 1 0 6.8" data-page-node-id="wsSpk3"/>
           <path d="M18.2 5.8a8.8 8.8 0 0 1 0 12.4" data-page-node-id="wsSpk4"/>
         </svg>
+      </button>
+      <button type="button" class="word-del" aria-label="删除这个单词" title="删除这个单词" data-page-node-id="btnWordDel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-page-node-id="wdDel1"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" data-page-node-id="wdDel2"/></svg>
       </button>
     </div>
   </template>
